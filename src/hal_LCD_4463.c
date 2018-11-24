@@ -106,7 +106,7 @@ const char alphabetBig[26][2] =
     {0x90, 0x28}   /* "Z" */
 };
 
-void Init_LCD()
+void InitLCD()
 {
     // L0~L27 & L36~L39 pins selected
     LCD_E_setPinAsLCDFunctionEx(LCD_E_BASE, LCD_E_SEGMENT_LINE_0, LCD_E_SEGMENT_LINE_27);

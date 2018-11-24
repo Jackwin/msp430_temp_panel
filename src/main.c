@@ -8,6 +8,8 @@
 #include "TempSensorMode.h"
 #include "hal_LCD_4463.h"
 #include "main.h"
+#include "uart.h"
+
 
 // Define word access definitions to LCD memories
 #define LCDMEMW ((int*)LCDMEM)
@@ -63,10 +65,10 @@ int main(void)
 
   PM5CTL0 &= ~LOCKLPM5;
 
-	Init_GPIO();
+	InitGPIO();
 
  //   Init_Clock();
-	Init_LCD();
+	InitLCD();
 
 //	GPIO_clearInterrupt(GPIO_PORT_P2, GPIO_PIN4);
 //	GPIO_clearInterrupt(GPIO_PORT_P2, GPIO_PIN5);
@@ -131,7 +133,8 @@ int main(void)
 
 	 resetSetTemperature();
 
-	 Init_spi_B();
+	 //Init_spi_B();
+	// InitEusci();
 
 //	 System_Initial();
 
@@ -203,10 +206,27 @@ while(1)
 /*
  * Clock System Initialization
  */
-void Init_Clock()
+void InitClock()
 {
     // Intializes the XT1 crystal oscillator
-    CS_turnOnXT1(CS_XT1_DRIVE_1);
+    S_turnOnXT1(CS_XT1_DRIVE_1);
+      
+    // Set REFO as the DCO FLLL reference clock 
+    // REFO is internal 32.768 KHz
+    /*
+    CS_initClockSignal(
+        CS_FLLREF,
+        CS_REFOCLK_SELECT,
+        CS_CLOCK_DIVIDER_1
+        );
+
+    // Set ACLK = REFO
+    CS_initClockSignal(
+        CS_ACLK,
+        CS_REFOCLK_SELECT,
+        CS_CLOCK_DIVIDER_1
+        );
+        */
 }
 
 /*
@@ -223,7 +243,7 @@ void Init_RTC()
 
 
 
-void delay_clock(uint16_t i)
+void DelayClock(uint16_t i)
 {
     uint16_t counter;
 
@@ -234,7 +254,7 @@ void delay_clock(uint16_t i)
 /*
  * GPIO Initialization
  */
-void Init_GPIO()
+void InitGPIO()
 {
     // Set all GPIO pins to output low to prevent floating input and reduce power consumption
 /*    GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN0|GPIO_PIN1|GPIO_PIN2|GPIO_PIN3|GPIO_PIN4|GPIO_PIN5|GPIO_PIN6|GPIO_PIN7);
@@ -298,6 +318,14 @@ void Init_GPIO()
     GPIO_clearInterrupt(GPIO_PORT_P2, GPIO_PIN7);
     GPIO_enableInterrupt(GPIO_PORT_P2, GPIO_PIN7);
 
+
+    // Disable BC95 reset
+    GPIO_setAsOutputPin(GPIO_PORT_P8, GPIO_PIN0);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P8, GPIO_PIN0);
+
+    GPIO_setOutputHighOnPin(GPIO_PORT_P8, GPIO_PIN0);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P8, GPIO_PIN0);
+
     // Set P4.1 and P4.2 as Secondary Module Function Input, LFXT.
 //    GPIO_setAsPeripheralModuleFunctionInputPin(
 //           GPIO_PORT_P4,
@@ -309,6 +337,9 @@ void Init_GPIO()
     // to activate previously configured port settings
     PMM_unlockLPM5();
 }
+
+
+
 
 
 

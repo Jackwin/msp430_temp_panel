@@ -67,7 +67,7 @@
 extern const char digit[10][2];
 extern const char alphabetBig[26][2];
 
-void Init_LCD(void);
+void InitLCD(void);
 void displayScrollText(char*);
 void showChar(char, int);
 void showChar4463(char, int);
