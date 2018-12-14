@@ -1,26 +1,31 @@
 
 #include "uart.h"
 #include "main.h"
+#include "bc95.h"
 bool rx_buf_ready = false;
-bool rxThreshold = false;
+
+
 char rx_buf[MAX_STRBUF_SIZE];
+//BC95 bc95_status;
+
+uint8_t char_cnt = 0;
 
 // Initialize EUSCI
 void InitEusci(void)
 {
-  
+
     // Configure UART 9600 @ SMCLK 1MHz
     // http://software-dl.ti.com/msp430/msp430_public_sw/mcu/msp430/MSP430BaudRateConverter/index.html
     EUSCI_A_UART_initParam param = {0};
     param.selectClockSource = EUSCI_A_UART_CLOCKSOURCE_SMCLK;// EUSCI_A_UART_CLOCKSOURCE_SMCLK
-    param.clockPrescalar = 6; //16MHz 8
-    param.firstModReg = 8; //16MHz 10
-    param.secondModReg = 17; // 16MHz 247
+    param.clockPrescalar = 6; //16MHz 8  1M 6
+    param.firstModReg = 8; //16MHz 10  1M 8
+    param.secondModReg = 17; // 16MHz 247  1M 17
     param.parity = EUSCI_A_UART_NO_PARITY;
     param.msborLsbFirst = EUSCI_A_UART_LSB_FIRST;
     param.numberofStopBits = EUSCI_A_UART_ONE_STOP_BIT;
     param.uartMode = EUSCI_A_UART_MODE;
-    param.overSampling = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;// 16MHz EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;
+    param.overSampling = EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;// 16MHzM EUSCI_A_UART_OVERSAMPLING_BAUDRATE_GENERATION;
 
     if(STATUS_FAIL == EUSCI_A_UART_init(EUSCI_A0_BASE, &param))
     {
@@ -52,6 +57,7 @@ void TransmitString(char *str)
         }
     }
 }
+
 
 
 // Receives strings terminated with \n
@@ -90,31 +96,17 @@ void ReceiveString(char data) {
 __interrupt void USCI_A0_ISR(void)
 
 {
+
     switch(__even_in_range(UCA0IV,USCI_UART_UCTXCPTIFG))
     {
         case USCI_NONE: break;
         case USCI_UART_UCRXIFG:
-            // Read buffer
-            ReceiveString(UCA0RXBUF);
-            TransmitString("DATA");
-            if (rxThreshold)
-            {
-                if (rx_buf_ready)
-                {
-                    //threshold = _Q8(strtof(rx_buf, NULL));
-                    rxThreshold = false;
-                    rx_buf_ready = false;
-                }
-            }
-            if (rx_buf_ready && !rxThreshold)
-            {
-                if (strcmp(rx_buf,"THRESH")==0)
-                {
-                    rxThreshold = true;
-                }
-                rx_buf_ready = false;
-            }
-
+            if (UCA0RXBUF !='\n')
+                rx_buf[char_cnt++] = UCA0RXBUF;
+             else {
+                 char_cnt = 0;
+                // TransmitString("ACK\n");
+             }
             break;
         case USCI_UART_UCTXIFG: break;
         case USCI_UART_UCSTTIFG: break;

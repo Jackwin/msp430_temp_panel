@@ -45,9 +45,13 @@
 #define MAIN_H_
 
 #include <driverlib.h>
+#include <string.h>
 
 #define STARTUP_MODE 0
 #define MAX_STRBUF_SIZE 128
+#define NULL ((void*)0)
+#define NOP() _nop()
+
 
 extern volatile unsigned char * stopWatchRunning;
 extern volatile unsigned char * tempSensorRunning;
@@ -60,7 +64,8 @@ extern Timer_A_initUpModeParam initUpParam_A0;
 //void Init_GPIO(void);
 void InitGPIO();
 void InitClock( );
-void InitRTC( );
+void Init_RTC( );
 void DelayClock(uint16_t i);
+
 
 #endif /* MAIN_H_ */
