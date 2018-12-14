@@ -50,12 +50,13 @@
 
 extern volatile unsigned char * tempUnit;
 
-void tempSensoronchip(void);
-void tempSensorModeInit(void);
-void displayTemp(void);
-void displayTemp4463(void);
-void resetSetTemperature(void);
-void displaySetTemp4463(void);
-unsigned char returnSetTemperature (void);
+void TempSensoronChip(void);
+void TempSensorModeInit(void);
+void DisplayTemp(void);
+void DisplayTemp4463(void);
+void ResetSetTemperature(void);
+void DisplaySetTemp4463(void);
+unsigned char ReturnSetTemperature (void);
+void ADCDisplayTemp4463();
 
 #endif /* TEMPSENSORMODE_H_ */

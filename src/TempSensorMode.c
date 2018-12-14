@@ -64,6 +64,11 @@ volatile unsigned char * S5buttonDebounce = &BAKMEM10_L;       // S5 button debo
 volatile unsigned char * S6buttonDebounce = &BAKMEM10_H;      // S6 button debounce flag
 
 
+
+float Radc;
+float lnr, ADCTemp;
+
+
 /*
 // TimerA UpMode Configuration Parameter
 Timer_A_initUpModeParam initUpParam_A1 =
@@ -98,20 +103,22 @@ Timer_A_initUpModeParam initUpParam_A0 =
 };
 
 
-void resetSetTemperature()
+void ResetSetTemperature()
 {
     *Settemperature = 25;
-    displaySetTemp4463();
+    DisplaySetTemp4463();
 }
 
-void buttonint()
+void ButtonInt()
 {
     *S3buttonDebounce = *S4buttonDebounce = *S5buttonDebounce= *S6buttonDebounce = 0;
 }
 
 
-void tempSensoronchip()
+void TempSensoronChip()
 {
+
+  //  ADC_PinInit(ADC_BASE,ADC_INPUT_A3+ADC_INPUT_A4);
     //Initialize the ADC Module
     /*
      * Base Address for the ADC Module
@@ -139,8 +146,10 @@ void tempSensoronchip()
      * Use negative reference of AVss
      */
     ADC_configureMemory(ADC_BASE,
-        ADC_INPUT_TEMPSENSOR,
-        ADC_VREFPOS_INT,
+       // ADC_INPUT_TEMPSENSOR,  // for onchip tempsensor
+        ADC_INPUT_A3,            //  for temp resistor
+     //   ADC_VREFPOS_INT,
+        ADC_VREFPOS_AVCC,
         ADC_VREFNEG_AVSS);
 
     ADC_clearInterrupt(ADC_BASE,
@@ -190,13 +199,20 @@ void tempSensoronchip()
         	// Turn LED1 on when waking up to calculate temperature and update display
            // P1OUT |= BIT0;
 
-            // Calculate Temperature in degree C and F
-            signed short temp = (ADCMEM0 - CALADC_15V_30C);
+            // Calculate Temperature in degree C and F  // for on-chip temperature
+ /*         signed short temp = (ADCMEM0 - CALADC_15V_30C);
             *degC = ((long)temp * 10 * (85-30) * 10)/((CALADC_15V_85C-CALADC_15V_30C)*10) + 300 -50;  //-50ÎªÎÂ¶È²¹³¥
-            *degF = (*degC) * 9 / 5 + 320;
+            *degF = (*degC) * 9 / 5 + 320; */
+
+            // Calculate Temperature in degree C and F  // for ADC temperature
+            Radc = (100*ADCMEM0)/(1023-ADCMEM0);
+            lnr = log(Radc/357)/log(2.7);
+            ADCTemp = (273*4.25)/(4250+lnr*273);
+            *degC = ADCTemp*1000- 273;
 
             // Update temperature on LCD
-            displayTemp4463();
+           // displayTemp4463();
+             ADCDisplayTemp4463();
 
           //  P1OUT &= ~BIT0;
       //  }
@@ -226,7 +242,7 @@ void tempSensoronchip()
     //}
 }
 
-void tempSensorModeInit()
+void TempSensorModeInit()
 {
     *tempSensorRunning = 1;
 
@@ -238,7 +254,7 @@ void tempSensorModeInit()
     //Timer_A_initUpMode(TIMER_A0_BASE, &initUpParam_A0);
 }
 
-void displayTemp()
+void DisplayTemp()
 {
     clearLCD();
 
@@ -280,12 +296,13 @@ void displayTemp()
     LCDMEM[pos5+1] |= 0x04;
 }
 
-void displayTemp4463()
+void DisplayTemp4463()
 {
    // clearLCD4463();
 
     // Pick C or F depending on tempUnit state
     int deg;
+
    // if (*tempUnit == 0)
    // {
       //  showChar('C',pos6);
@@ -310,9 +327,9 @@ void displayTemp4463()
     // Handles displaying up to 999.9 degrees
 
     if ((deg>=100) & (deg<=1000))
-        Temperature_showChar4463((deg/100)%10 + '0',13);
+        TemperatureShowChar4463((deg/100)%10 + '0',13);
     if (deg>=10)
-        Temperature_showChar4463((deg/10)%10 + '0',12);
+        TemperatureShowChar4463((deg/10)%10 + '0',12);
    // if (deg>=1)
     //    showChar((deg/1)%10 + '0',pos5);
 
@@ -323,7 +340,51 @@ void displayTemp4463()
  //   LCDMEM[pos5+1] |= 0x04;
 }
 
-void displaySetTemp4463()
+void ADCDisplayTemp4463()
+{
+   // clearLCD4463();
+
+    // Pick C or F depending on tempUnit state
+    int deg;
+
+   // if (*tempUnit == 0)
+   // {
+      //  showChar('C',pos6);
+        deg = *degC;
+   // }
+   // else
+   // {
+   //     showChar('F',pos6);
+   //     deg = *degF;
+   // }
+
+    // Handle negative values
+    if (deg < 0)
+    {
+       // deg *= -1;
+        // Negative sign
+       // LCDMEM[pos1+1] |= 0x04;
+        LCDMEM[13]= 0x02 | 0x08;
+        LCDMEM[12] = 0x05 | 0x08;
+    }
+
+    // Handles displaying up to 999.9 degrees
+
+    if ((deg>=10) & (deg<100))
+        TemperatureShowChar4463((deg/10)%10 + '0',13);
+    if (deg>=1)
+        TemperatureShowChar4463((deg%10) + '0',12);
+   // if (deg>=1)
+    //    showChar((deg/1)%10 + '0',pos5);
+
+    // Decimal point
+  //  LCDMEM[pos4+1] |= 0x01;
+
+    // Degree symbol
+ //   LCDMEM[pos5+1] |= 0x04;
+}
+
+void DisplaySetTemp4463()
 {
     int setdeg;
       // if (*tempUnit == 0)
@@ -350,23 +411,23 @@ void displaySetTemp4463()
        // Handles displaying up to 999.9 degrees
 
 //       if ((setdeg>=10) & (setdeg<=100))
-//           Temperature_showChar4463((setdeg/10)%10 + '0',11);
+//           TemperatureShowChar4463((setdeg/10)%10 + '0',11);
 //       if (setdeg>=0)
-//           Temperature_showChar4463((setdeg)%10 + '0',10);
+//           TemperatureShowChar4463((setdeg)%10 + '0',10);
        if ((setdeg>=10) & (setdeg<=100))
        {
-           Temperature_showChar4463((setdeg/10)%10 + '0',11);
-           Temperature_showChar4463((setdeg)%10 + '0',10);
+           TemperatureShowChar4463((setdeg/10)%10 + '0',11);
+           TemperatureShowChar4463((setdeg)%10 + '0',10);
        }
        if ((setdeg>=0) & (setdeg<10))
        {
-           Temperature_showChar4463(0 + '0',11);
-           Temperature_showChar4463((setdeg)%10 + '0',10);
+           TemperatureShowChar4463(0 + '0',11);
+           TemperatureShowChar4463((setdeg)%10 + '0',10);
        }
 
 }
 
-unsigned char returnSetTemperature (void)
+unsigned char ReturnSetTemperature (void)
 {
     unsigned char settemp;
     settemp = *Settemperature;
@@ -472,10 +533,10 @@ __interrupt void TIMER0_A0_ISR (void)
         // Stop timer A0
         Timer_A_stop(TIMER_A0_BASE);
       //  *S3buttonDebounce = 0;                                   // Clear button debounce
-        buttonint();
+        ButtonInt();
         (*Settemperature)++;
 
-        TxSetTemperatur();
+      //  TxSetTemperatur();
         // P1OUT &= ~BIT0;
     }
 
@@ -485,10 +546,10 @@ __interrupt void TIMER0_A0_ISR (void)
         // Stop timer A0
         Timer_A_stop(TIMER_A0_BASE);
       //  *S4buttonDebounce = 0;                                   // Clear button debounce
-        buttonint();
+        ButtonInt();
         (*Settemperature)--;
 
-        TxSetTemperatur();
+      //  TxSetTemperatur();
 
         // P4OUT &= ~BIT0;
     }
@@ -499,8 +560,8 @@ __interrupt void TIMER0_A0_ISR (void)
         // Stop timer A0
         Timer_A_stop(TIMER_A0_BASE);
       //  *S5buttonDebounce = 0;                                   // Clear button debounce
-        buttonint();
-         minutesinc();
+        ButtonInt();
+         MinutesInc();
         // P4OUT &= ~BIT0;
     }
 
@@ -510,8 +571,8 @@ __interrupt void TIMER0_A0_ISR (void)
         // Stop timer A0
         Timer_A_stop(TIMER_A0_BASE);
       //  *S6buttonDebounce = 0;                                   // Clear button debounce
-        buttonint();
-        hoursinc();
+        ButtonInt();
+        HoursInc();
         // P4OUT &= ~BIT0;
     }
 

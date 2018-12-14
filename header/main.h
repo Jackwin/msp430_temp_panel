@@ -64,7 +64,7 @@ extern Timer_A_initUpModeParam initUpParam_A0;
 //void Init_GPIO(void);
 void InitGPIO();
 void InitClock( );
-void Init_RTC( );
+void InitRTC( );
 void DelayClock(uint16_t i);
 
 

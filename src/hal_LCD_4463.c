@@ -147,7 +147,7 @@ void InitLCD()
 /*
  * Scrolls input string across LCD screen from left to right
  */
-void displayScrollText(char *msg)
+void DisplayScrollText(char *msg)
 {
     int length = strlen(msg);
     int oldmode = *mode;
@@ -184,7 +184,7 @@ void displayScrollText(char *msg)
  * Displays input character at given LCD digit/position
  * Only spaces, numeric digits, and uppercase letters are accepted characters
  */
-void showChar4463(char c, int position)
+void ShowChar4463(char c, int position)
 {
     if (c >= '0' && c <= '9')
     {
@@ -204,7 +204,7 @@ void showChar4463(char c, int position)
  * Displays input character at given LCD digit/position for 4463 Time LCD
  * */
 
-void Time_showChar4463(char c, int position)
+void TimeShowChar4463(char c, int position)
 {
     if (c >= '0' && c <= '9')
     {
@@ -223,7 +223,7 @@ void Time_showChar4463(char c, int position)
  * Displays input character at given LCD digit/position for 4463 temperature LCD
  * */
 
-void Temperature_showChar4463(char c, int position)
+void TemperatureShowChar4463(char c, int position)
 {
     if (c >= '0' && c <= '9')
     {
@@ -242,7 +242,7 @@ void Temperature_showChar4463(char c, int position)
 /*
  * Clears memories to all 6 digits on the LCD
  */
-void clearLCD()
+void ClearLCD()
 {
     LCDMEMW[pos1/2] = 0;
     LCDMEMW[pos2/2] = 0;
@@ -253,7 +253,7 @@ void clearLCD()
     LCDMEM[12] = LCDMEM[13] = 0;
 }
 
-void clearLCD4463()
+void ClearLCD4463()
 {
        LCDMEM[0] = 0x00;
        LCDMEM[1] = 0x00;

@@ -53,16 +53,16 @@ extern volatile unsigned char * init;        // Store hours in the backup RAM mo
 
 #define STOPWATCH_MODE        1
 
-void stopWatch(void);
-void stopWatchModeInit(void);
-void Inc_RTC(void);
-void Inc_RTC4463(void);
-void resetStopWatch(void);
-void displayTime(void);
-void displayTime4463(void);
-void buttonint(void);
-void minutesinc(void);
-void hoursinc(void);
+void StopWatch(void);
+void StopWatchModeInit(void);
+//void IncRTC(void);
+void IncRTC4463(void);
+void ResetStopWatch(void);
+void DisplayTime(void);
+void DisplayTime4463(void);
+void ButtonInt(void);
+void MinutesInc(void);
+void HoursInc(void);
 
 
 #endif /* STOPWATCHMODE_H_ */

@@ -49,6 +49,13 @@
 
 #include <assert.h>
 
+void ADC_PinInit(uint16_t baseAddress,uint16_t ADC_ChannelSelect)
+{
+   // Enable ADC channel Pin
+    HWREG16(baseAddress + OFS_SYSCFG2) |= ADC_ChannelSelect;
+
+}
+
 void ADC_init(uint16_t baseAddress,
               uint16_t sampleHoldSignalSourceSelect,
               uint8_t clockSourceSelect,

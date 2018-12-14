@@ -68,13 +68,13 @@ extern const char digit[10][2];
 extern const char alphabetBig[26][2];
 
 void InitLCD(void);
-void displayScrollText(char*);
-void showChar(char, int);
-void showChar4463(char, int);
-void Temperature_showChar4463(char, int);
-void Time_showChar4463(char, int);
-void clearLCD(void);
-void clearLCD4463(void);
+void DisplayScrollText(char*);
+void ShowChar(char, int);
+void ShowChar4463(char, int);
+void TemperatureShowChar4463(char, int);
+void TimeShowChar4463(char, int);
+void ClearLCD(void);
+void ClearLCD4463(void);
 
 
 #endif /* HAL_LCD_H_ */
