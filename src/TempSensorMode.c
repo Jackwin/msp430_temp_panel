@@ -64,10 +64,10 @@ volatile unsigned char * S5buttonDebounce = &BAKMEM10_L;       // S5 button debo
 volatile unsigned char * S6buttonDebounce = &BAKMEM10_H;      // S6 button debounce flag
 
 
-
 float Radc;
 float lnr, ADCTemp;
 
+extern volatile unsigned short global_temp_data;
 
 /*
 // TimerA UpMode Configuration Parameter
@@ -351,6 +351,7 @@ void ADCDisplayTemp4463()
    // {
       //  showChar('C',pos6);
         deg = *degC;
+        global_temp_data = deg;
    // }
    // else
    // {

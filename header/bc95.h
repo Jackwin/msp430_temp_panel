@@ -9,7 +9,7 @@
 
 extern char rx_buf[MAX_STRBUF_SIZE];
 void BC95Init(void);
-void BC95ConnectCloud(void);
+void BC95ConnectCloud(unsigned short temp_data);
 void ClearRxBuffer(void);
 
 typedef struct

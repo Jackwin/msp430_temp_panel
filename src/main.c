@@ -28,7 +28,7 @@
 volatile unsigned char * mode = &BAKMEM4_L;                   // mode flag
 volatile unsigned int holdCount = 0;
 
-
+volatile unsigned short global_temp_data;
 
 //32 pin LCD with newboard, numberic table for 7,8,9,10 LED
 const char digit4463_7_10_test[10] =
@@ -80,15 +80,13 @@ Timer_A_initUpModeParam initUpParam_A0 =
 */
 int main(void)
 {
+
     WDTCTL = WDTPW | WDTHOLD; // stop watchdog timer
 
     ADC_PinInit(ADC_BASE, ADC_INPUT_A3);
     ButtonInt();
-
     PM5CTL0 &= ~LOCKLPM5;
-
     InitGPIO();
-
 
     //InitClock();
     InitLCD();
@@ -105,8 +103,12 @@ int main(void)
 
     StopWatchModeInit();     // Initialize stopwatch mode
 
+    IncRTC4463();
+    TempSensoronChip();
+    DisplaySetTemp4463( );
+
     BC95Init();
-    BC95ConnectCloud();
+    BC95ConnectCloud(global_temp_data);
     while (1)
     {
         IncRTC4463();
@@ -189,7 +191,10 @@ void InitGPIO()
        GPIO_setOutputLowOnPin(GPIO_PORT_P6, GPIO_PIN0|GPIO_PIN1|GPIO_PIN2|GPIO_PIN3|GPIO_PIN4|GPIO_PIN5|GPIO_PIN6|GPIO_PIN7);
        GPIO_setOutputLowOnPin(GPIO_PORT_P7, GPIO_PIN0|GPIO_PIN1|GPIO_PIN2|GPIO_PIN3|GPIO_PIN4|GPIO_PIN5|GPIO_PIN6|GPIO_PIN7);
        GPIO_setOutputHighOnPin(GPIO_PORT_P8, GPIO_PIN0|GPIO_PIN1|GPIO_PIN2|GPIO_PIN3|GPIO_PIN4|GPIO_PIN5|GPIO_PIN6|GPIO_PIN7);*/
-    GPIO_setOutputHighOnPin(GPIO_PORT_P8, GPIO_PIN3);
+    // Turn on the LCD light
+   // GPIO_setOutputHighOnPin(GPIO_PORT_P8, GPIO_PIN3);
+    // Turn off the LCD light
+    GPIO_setOutputLowOnPin(GPIO_PORT_P8, GPIO_PIN3);
 
    // GPIO_setAsOutputPin(GPIO_PORT_P1, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2 | GPIO_PIN3 | GPIO_PIN4 | GPIO_PIN5 | GPIO_PIN6 | GPIO_PIN7);
    // GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN0 | GPIO_PIN1 | GPIO_PIN2 | GPIO_PIN3 | GPIO_PIN4 | GPIO_PIN5 | GPIO_PIN6 | GPIO_PIN7);
